@@ -90,6 +90,7 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
             <Controller
               name="dobDay"
               control={control}
+              rules={{ required: t('basics.required') }}
               render={({ field }) => (
                 <SelectDropdown
                   label={t('basics.dob.day')}
@@ -99,6 +100,7 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
                     value: String(i + 1),
                     label: String(i + 1),
                   }))}
+                  error={!!errors.dobDay}
                 />
               )}
             />
@@ -109,12 +111,14 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
             <Controller
               name="dobMonth"
               control={control}
+              rules={{ required: t('basics.required') }}
               render={({ field }) => (
                 <SelectDropdown
                   label={t('basics.dob.month')}
                   value={field.value}
                   onChange={field.onChange}
                   options={months.map((m, i) => ({ value: String(i + 1), label: m }))}
+                  error={!!errors.dobMonth}
                 />
               )}
             />
@@ -125,6 +129,7 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
             <Controller
               name="dobYear"
               control={control}
+              rules={{ required: t('basics.required') }}
               render={({ field }) => (
                 <SelectDropdown
                   label={t('basics.dob.year')}
@@ -134,6 +139,7 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
                     value: String(currentYear - i),
                     label: String(currentYear - i),
                   }))}
+                  error={!!errors.dobYear}
                 />
               )}
             />
@@ -145,16 +151,18 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
       <Input
         label={t('basics.father')}
         placeholder={t('basics.father.placeholder')}
+        error={errors.fatherName?.message}
         autoComplete="off"
-        {...register('fatherName')}
+        {...register('fatherName', { required: t('basics.required') })}
       />
 
       {/* Mother's name */}
       <Input
         label={t('basics.mother')}
         placeholder={t('basics.mother.placeholder')}
+        error={errors.motherName?.message}
         autoComplete="off"
-        {...register('motherName')}
+        {...register('motherName', { required: t('basics.required') })}
       />
 
       <Button type="submit" variant="primary" size="lg" pill className="w-full mt-2">
@@ -169,21 +177,24 @@ function SelectDropdown({
   value,
   onChange,
   options,
+  error,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
+  error?: boolean;
 }) {
   return (
     <div className="relative">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-3 text-base bg-paper border border-border-soft rounded-xl
+        className={`w-full px-3 py-3 text-base bg-paper border rounded-xl
           text-ink appearance-none cursor-pointer min-h-[52px]
           focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 ring-fade
-          transition-colors duration-200 font-sans"
+          transition-colors duration-200 font-sans
+          ${error ? 'border-rose' : 'border-border-soft'}`}
       >
         <option value="">{label}</option>
         {options.map((opt) => (

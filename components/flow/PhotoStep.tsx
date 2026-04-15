@@ -17,6 +17,7 @@ export default function PhotoStep({ onNext }: PhotoStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [compressing, setCompressing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState('');
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -145,7 +146,6 @@ export default function PhotoStep({ onNext }: PhotoStepProps) {
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          capture="environment"
           className="hidden"
           onChange={handleInputChange}
           aria-hidden="true"
@@ -189,17 +189,25 @@ export default function PhotoStep({ onNext }: PhotoStepProps) {
 
       {/* Actions */}
       <div className="flex flex-col items-center gap-4 w-full">
-        <Button variant="primary" size="lg" pill className="w-full" onClick={onNext}>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-rose font-sans text-center"
+          >
+            {error}
+          </motion.p>
+        )}
+        <Button variant="primary" size="lg" pill className="w-full" onClick={() => {
+          if (!photoPreviewUrl) {
+            setError(t('photo.required'));
+            return;
+          }
+          setError('');
+          onNext();
+        }}>
           {photoPreviewUrl ? t('nav.continue') : t('nav.next')}
         </Button>
-        {!photoPreviewUrl && (
-          <button
-            onClick={onNext}
-            className="text-sm text-ink-hint hover:text-ink-muted transition-colors cursor-pointer font-sans underline underline-offset-2"
-          >
-            {t('photo.skip')}
-          </button>
-        )}
       </div>
     </div>
   );

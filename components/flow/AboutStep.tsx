@@ -21,7 +21,7 @@ export default function AboutStep({ onNext }: AboutStepProps) {
   const { t } = useTranslation();
   const { qualifications, achievements, hobbies, setAbout } = useFormStore();
 
-  const { register, handleSubmit, watch } = useForm<FormValues>({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
     defaultValues: { qualifications, achievements, hobbies },
   });
 
@@ -50,24 +50,27 @@ export default function AboutStep({ onNext }: AboutStepProps) {
         label={t('about.qualifications')}
         placeholder={t('about.qualifications.placeholder')}
         hint={t('about.qualifications.hint')}
+        error={errors.qualifications?.message}
         minRows={3}
-        {...register('qualifications')}
+        {...register('qualifications', { required: t('basics.required') })}
       />
 
       <Textarea
         label={t('about.achievements')}
         placeholder={t('about.achievements.placeholder')}
         hint={t('about.achievements.hint')}
+        error={errors.achievements?.message}
         minRows={3}
-        {...register('achievements')}
+        {...register('achievements', { required: t('basics.required') })}
       />
 
       <Textarea
         label={t('about.hobbies')}
         placeholder={t('about.hobbies.placeholder')}
         hint={t('about.hobbies.hint')}
+        error={errors.hobbies?.message}
         minRows={3}
-        {...register('hobbies')}
+        {...register('hobbies', { required: t('basics.required') })}
       />
 
       <Button type="submit" variant="primary" size="lg" pill className="w-full mt-2">

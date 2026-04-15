@@ -10,7 +10,7 @@ const translations = {
   'lang.english.sub': { hi: 'अंग्रेज़ी', en: 'अंग्रेज़ी' },
 
   // ─── Welcome ────────────────────────────────────────────────────────────
-  'welcome.family': { hi: 'सांवलराम मकुदेवी परिवार', en: 'Sanwalram Makudevi Family' },
+  'welcome.family': { hi: 'सांवलराम मखुदेवी परिवार', en: 'Sanwalram Makhudevi Family' },
   'welcome.invite': { hi: 'अपनी जीवन की कहानी इस परिवार के साथ साझा करें।', en: 'Share your life story with our family.' },
   'welcome.begin': { hi: 'शुरू करें →', en: 'Begin →' },
 
@@ -27,6 +27,7 @@ const translations = {
   'photo.remove': { hi: 'हटाएं', en: 'Remove' },
   'photo.change': { hi: 'बदलें', en: 'Change' },
   'photo.compressing': { hi: 'तस्वीर तैयार हो रही है...', en: 'Preparing photo...' },
+  'photo.required': { hi: 'कृपया अपनी तस्वीर जोड़ें', en: 'Please add your photo' },
 
   // ─── Screen 3 — Basics ──────────────────────────────────────────────────
   'basics.heading': { hi: 'आपके बारे में', en: 'About you' },

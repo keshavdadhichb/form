@@ -29,7 +29,7 @@ const tiroDevanagari = Tiro_Devanagari_Hindi({
 });
 
 export const metadata: Metadata = {
-  title: 'सांवलराम मकुदेवी परिवार | Sanwalram Makudevi Pariwar',
+  title: 'सांवलराम मखुदेवी परिवार | Sanwalram Makhudevi Pariwar',
   description: 'अपनी जीवन की कहानी परिवार के साथ साझा करें — Share your life story with the family.',
   robots: { index: false, follow: false },
 };
