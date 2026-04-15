@@ -17,7 +17,9 @@ create table if not exists stories (
   photo_url text,
   media_url text,
   language text check (language in ('hi','en')),
-  hidden boolean default false
+  hidden boolean default false,
+  summary text,           -- AI-generated one-sentence summary
+  tags text[]             -- AI-generated tags e.g. {"teacher","Rajasthan","1947"}
 );
 
 -- 2. Enable Row Level Security

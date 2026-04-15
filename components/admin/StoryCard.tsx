@@ -99,13 +99,21 @@ export default function StoryCard({ story, onClick, onToggleHide }: StoryCardPro
           </div>
         </div>
 
-        {/* Story preview */}
-        {story.story_text && (
-          <div className="relative">
-            <p className="text-sm text-ink-muted font-sans leading-relaxed line-clamp-2">
-              {story.story_text}
-            </p>
-            <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-paper to-transparent" />
+        {/* AI summary (preferred) or raw story preview */}
+        {(story.summary || story.story_text) && (
+          <p className="text-sm text-ink-muted font-sans leading-relaxed line-clamp-2 mt-1">
+            {story.summary || story.story_text}
+          </p>
+        )}
+
+        {/* AI tags */}
+        {story.tags && story.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {story.tags.map((tag) => (
+              <span key={tag} className="text-[11px] font-sans px-2 py-0.5 rounded-full bg-wheat/70 text-wheat-ink">
+                {tag}
+              </span>
+            ))}
           </div>
         )}
 

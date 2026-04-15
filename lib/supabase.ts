@@ -47,4 +47,7 @@ export type Story = {
   media_url: string | null;
   language: 'hi' | 'en';
   hidden: boolean;
+  // AI-generated fields (added in v2 migration)
+  summary: string | null;
+  tags: string[] | null;
 };

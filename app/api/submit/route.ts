@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase';
+import { generateSummaryAndTags } from '@/lib/gemini';
 
 export async function POST(request: NextRequest) {
   try {
@@ -93,6 +94,24 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error('Insert error:', insertError);
       return NextResponse.json({ error: 'Failed to save story' }, { status: 500 });
+    }
+
+    // Fire-and-forget: generate AI summary + tags in the background
+    // Only when there is text content to summarise
+    const textForSummary = storyText || [qualifications, achievements, hobbies].filter(Boolean).join(' ');
+    if (textForSummary.trim().length > 30 && process.env.GEMINI_API_KEY) {
+      generateSummaryAndTags(textForSummary, name, language)
+        .then(({ summary, tags }) => {
+          if (!summary && !tags.length) return;
+          supabase
+            .from('stories')
+            .update({ summary, tags })
+            .eq('id', data.id)
+            .then(({ error }) => {
+              if (error) console.error('Summary update error:', error);
+            });
+        })
+        .catch((err) => console.error('Summary generation error:', err));
     }
 
     return NextResponse.json({ ok: true, id: data.id });
