@@ -26,9 +26,10 @@ function formatDob(dob: string | null): string {
 interface StoryModalProps {
   story: Story | null;
   onClose: () => void;
+  onDelete: (story: Story) => void;
 }
 
-export default function StoryModal({ story, onClose }: StoryModalProps) {
+export default function StoryModal({ story, onClose, onDelete }: StoryModalProps) {
   // Close on ESC
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -167,6 +168,22 @@ export default function StoryModal({ story, onClose }: StoryModalProps) {
                     </a>
                   </div>
                 )}
+
+                {/* Delete button */}
+                <div className="pt-4 border-t border-border-soft">
+                  <button
+                    onClick={() => {
+                      if (confirm(`Delete ${story.name}'s entry permanently? This cannot be undone.`)) {
+                        onDelete(story);
+                      }
+                    }}
+                    className="w-full flex items-center justify-center gap-2 text-sm font-sans font-medium
+                      text-rose border border-rose/30 rounded-xl px-4 py-3
+                      hover:bg-rose/10 transition-colors cursor-pointer"
+                  >
+                    🗑️ Delete this entry
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>

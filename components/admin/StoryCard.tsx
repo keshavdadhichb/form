@@ -40,6 +40,7 @@ interface StoryCardProps {
   story: Story;
   onClick: () => void;
   onToggleHide: () => void;
+  onDelete: () => void;
   token: string;
 }
 
@@ -50,7 +51,7 @@ const TYPE_ICONS: Record<string, string> = {
   upload: '📁',
 };
 
-export default function StoryCard({ story, onClick, onToggleHide }: StoryCardProps) {
+export default function StoryCard({ story, onClick, onToggleHide, onDelete }: StoryCardProps) {
   const avatarColor = nameToColor(story.name);
   const initials = nameInitials(story.name);
   const birthYear = getBirthYear(story.dob);
@@ -125,17 +126,26 @@ export default function StoryCard({ story, onClick, onToggleHide }: StoryCardPro
       {/* Footer */}
       <div className="px-4 pb-3 border-t border-border-soft pt-2 flex items-center justify-between">
         <span className="text-xs text-ink-hint font-sans capitalize">{story.story_type}</span>
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleHide(); }}
-          className={[
-            'text-xs font-sans cursor-pointer px-2 py-1 rounded-lg transition-colors',
-            story.hidden
-              ? 'text-sage-ink bg-sage/20 hover:bg-sage/30'
-              : 'text-ink-muted hover:text-ink',
-          ].join(' ')}
-        >
-          {story.hidden ? 'Show' : 'Hide'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleHide(); }}
+            className={[
+              'text-xs font-sans cursor-pointer px-2 py-1 rounded-lg transition-colors',
+              story.hidden
+                ? 'text-sage-ink bg-sage/20 hover:bg-sage/30'
+                : 'text-ink-muted hover:text-ink',
+            ].join(' ')}
+          >
+            {story.hidden ? 'Show' : 'Hide'}
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); if (confirm(`Delete ${story.name}'s entry? This cannot be undone.`)) onDelete(); }}
+            className="text-xs font-sans cursor-pointer px-2 py-1 rounded-lg text-rose hover:bg-rose/10 transition-colors"
+            title="Delete entry"
+          >
+            🗑️ Delete
+          </button>
+        </div>
       </div>
     </motion.div>
   );

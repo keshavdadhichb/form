@@ -99,6 +99,26 @@ export default function AdminPage() {
     });
   };
 
+  const deleteStory = async (story: Story) => {
+    if (!token) return;
+    // Optimistic removal
+    setStories((prev) => prev.filter((s) => s.id !== story.id));
+    // Close modal if this story was open
+    if (selectedStory?.id === story.id) setSelectedStory(null);
+    try {
+      const res = await fetch(`/api/admin/stories/${story.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        // Rollback on failure
+        fetchStories(token);
+      }
+    } catch {
+      fetchStories(token);
+    }
+  };
+
   const filtered = useMemo(() => {
     let result = [...stories];
 
@@ -278,6 +298,7 @@ export default function AdminPage() {
                     story={story}
                     onClick={() => setSelectedStory(story)}
                     onToggleHide={() => toggleHide(story)}
+                    onDelete={() => deleteStory(story)}
                     token={token}
                   />
                 </motion.div>
@@ -312,7 +333,7 @@ export default function AdminPage() {
       </div>
 
       {/* Modal */}
-      <StoryModal story={selectedStory} onClose={() => setSelectedStory(null)} />
+      <StoryModal story={selectedStory} onClose={() => setSelectedStory(null)} onDelete={deleteStory} />
     </div>
   );
 }

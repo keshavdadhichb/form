@@ -40,3 +40,52 @@ export async function PATCH(
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!checkAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const { id } = await params;
+    const supabase = createAdminClient();
+
+    // Fetch the story first to get file URLs for cleanup
+    const { data: story } = await supabase.from('stories').select('photo_url, media_url').eq('id', id).single();
+
+    // Delete storage files if they exist
+    if (story) {
+      const bucket = 'stories';
+      const filesToDelete: string[] = [];
+
+      if (story.photo_url) {
+        // Extract path from the full URL (after /object/public/stories/)
+        const photoMatch = story.photo_url.match(/\/stories\/(.+)$/);
+        if (photoMatch) filesToDelete.push(photoMatch[1]);
+      }
+      if (story.media_url) {
+        const mediaMatch = story.media_url.match(/\/stories\/(.+)$/);
+        if (mediaMatch) filesToDelete.push(mediaMatch[1]);
+      }
+
+      if (filesToDelete.length > 0) {
+        await supabase.storage.from(bucket).remove(filesToDelete);
+      }
+    }
+
+    // Delete the row
+    const { error } = await supabase.from('stories').delete().eq('id', id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+
