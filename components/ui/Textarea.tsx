@@ -18,7 +18,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     const resolvedRef = (ref as React.RefObject<HTMLTextAreaElement | null>) ?? innerRef;
 
-    const hasValue = Boolean(value !== undefined ? (value as string).length > 0 : false);
+    const hasValue = value !== undefined ? String(value).length > 0 : false;
     const isActive = focused || hasValue;
 
     // Auto-resize
@@ -35,13 +35,17 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {label && (
             <label
               htmlFor={id}
-              className={[
-                'label-float',
-                // For textarea, position label differently
-                'top-[22px]',
-                isActive ? 'active' : '',
-              ].join(' ')}
-              style={{ top: isActive ? '8px' : '22px', transform: 'none' }}
+              style={{
+                position: 'absolute',
+                left: '16px',
+                top: isActive ? '8px' : '20px',
+                fontSize: isActive ? '12px' : '16px',
+                color: isActive ? 'var(--ink-muted)' : 'var(--ink-hint)',
+                pointerEvents: 'none',
+                transition: 'top 200ms cubic-bezier(0.22,1,0.36,1), font-size 200ms cubic-bezier(0.22,1,0.36,1), color 200ms cubic-bezier(0.22,1,0.36,1)',
+                lineHeight: '1.4',
+                zIndex: 1,
+              }}
             >
               {label}
             </label>
@@ -56,7 +60,10 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             className={[
               'w-full px-4 pb-3 text-[18px] bg-paper text-ink',
               'border rounded-xl ring-fade',
+              // Placeholder hidden until focused
               'placeholder:text-ink-hint placeholder:text-[16px]',
+              'placeholder:opacity-0 focus:placeholder:opacity-100',
+              'placeholder:transition-opacity placeholder:duration-200',
               'transition-colors duration-200',
               'overflow-hidden resize-none leading-relaxed',
               label ? 'pt-7' : 'pt-4',
