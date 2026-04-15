@@ -1,36 +1,144 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# सांवलराम मकुदेवी परिवार — Family Legacy Website
 
-## Getting Started
+A bilingual (Hindi/English) family story-sharing website. Family members access it via a WhatsApp link, choose their language, and share their life story in text, audio, video, or file upload.
 
-First, run the development server:
+---
 
+## Setup (5 minutes)
+
+### 1. Create a Supabase project
+
+1. Go to [supabase.com](https://supabase.com) and create a free account
+2. Click **New Project**, fill in a name and password
+3. Wait ~2 minutes for it to spin up
+
+### 2. Run the database migration
+
+1. In your Supabase Dashboard, click **SQL Editor** → **New Query**
+2. Paste the entire contents of `supabase-migration.sql`
+3. Click **Run**
+
+This creates:
+- The `stories` table with all fields and RLS policies
+- Two public storage buckets: `pariwar-photos` and `pariwar-media`
+
+### 3. Get your keys
+
+In your Supabase Dashboard → **Settings** → **API**:
+
+- Copy **Project URL** → this is `NEXT_PUBLIC_SUPABASE_URL`
+- Copy **anon / public** key → this is `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- Copy **service_role** key → this is `SUPABASE_SERVICE_ROLE_KEY` (**keep this secret**)
+
+### 4. Set environment variables
+
+**For local development:**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
+# Edit .env.local and paste your values
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**For Vercel production:**
+1. Push this repo to GitHub
+2. Import it in [vercel.com/new](https://vercel.com/new)
+3. In the Vercel project settings → **Environment Variables**, add:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `ADMIN_PASSWORD` (choose something memorable but not obvious)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5. Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Local development
+npm run dev
 
-## Learn More
+# Production (requires Vercel CLI)
+npm install -g vercel
+vercel --prod
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Usage
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Family form**: Share the Vercel URL (or your custom domain) via WhatsApp
+- **Admin panel**: Visit `/admin`, enter your `ADMIN_PASSWORD`
 
-## Deploy on Vercel
+### Admin panel features
+- View all stories in a card gallery
+- Search by name, filter by story type and language
+- Click any card to view the full story, audio, or video
+- Toggle "Hide" on individual entries (for curation)
+- Print view: `Ctrl+P` / `⌘+P` generates a clean printable book layout
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Styling | Tailwind CSS v4 |
+| Animation | Framer Motion |
+| Database + Storage | Supabase |
+| State | Zustand + React Hook Form |
+| Image compression | browser-image-compression |
+| Hosting | Vercel |
+
+---
+
+## File structure
+
+```
+app/
+├── layout.tsx              — Fonts (Inter, Fraunces, Tiro Devanagari Hindi), I18n provider
+├── page.tsx                — Main multi-step flow with AnimatePresence transitions
+├── globals.css             — Design tokens, Tailwind v4 theme
+├── admin/
+│   └── page.tsx            — Admin gallery + modal
+└── api/
+    ├── submit/route.ts     — POST: receive form, upload to Supabase, insert row
+    └── admin/
+        ├── stories/route.ts          — GET: list all stories (admin auth required)
+        └── stories/[id]/route.ts     — PATCH: toggle hidden flag
+
+components/
+├── flow/                   — Step components (Language, Welcome, Photo, Basics, About, Story, Review, Success)
+├── ui/                     — Button, Input, Textarea, Card, ProgressPetals
+├── recorders/              — AudioRecorder, VideoRecorder (MediaRecorder API)
+└── admin/                  — StoryCard, StoryModal
+
+lib/
+├── translations.ts         — All UI strings (Hindi + English), translation function
+├── i18n.tsx                — Language context provider + useTranslation hook
+├── store.ts                — Zustand form state
+├── compress.ts             — Client-side image compression
+└── supabase.ts             — Supabase client (browser + admin)
+```
+
+---
+
+## Design tokens
+
+All colors are defined as CSS custom properties in `globals.css` and surfaced as Tailwind colors:
+
+| Token | Hex | Usage |
+|---|---|---|
+| `cream` | `#FDF8F3` | Background |
+| `terracotta` | `#E8B298` | Primary CTA |
+| `sage` | `#A8B8A0` | Success states |
+| `rose` | `#D4A5A5` | Error states |
+| `wheat` | `#E8D5B7` | Tertiary accent |
+| `ink` | `#3D3330` | Primary text |
+
+---
+
+## Environment variables reference
+
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase anon key (safe for browser) |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Supabase service role key (**server-only**) |
+| `ADMIN_PASSWORD` | ✅ | Password for `/admin` access |
