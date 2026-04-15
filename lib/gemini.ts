@@ -1,14 +1,12 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 function getClient() {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('Missing GEMINI_API_KEY');
-  return new GoogleGenerativeAI(key);
+  return new GoogleGenAI({ apiKey: key });
 }
 
-function flash() {
-  return getClient().getGenerativeModel({ model: 'gemini-1.5-flash' });
-}
+const MODEL = 'gemini-2.5-flash';
 
 // ─── 1. Story expansion ──────────────────────────────────────────────────────
 // Takes rough notes, returns a warm 200-300 word first-person narrative.
@@ -29,8 +27,12 @@ Rules:
 Rough notes:
 ${roughNotes}`;
 
-  const result = await flash().generateContent(prompt);
-  return result.response.text().trim();
+  const ai = getClient();
+  const result = await ai.models.generateContent({
+    model: MODEL,
+    contents: prompt,
+  });
+  return (result.text ?? '').trim();
 }
 
 // ─── 2. Audio transcription ──────────────────────────────────────────────────
@@ -43,11 +45,15 @@ export async function transcribeAudio(
   const langHint = language === 'hi' ? 'The speaker is likely speaking in Hindi.' : 'The speaker is likely speaking in English.';
   const prompt = `Transcribe this audio recording accurately. ${langHint} The speaker may mix languages. Return only the transcription — no commentary, no timestamps, no labels.`;
 
-  const result = await flash().generateContent([
-    { inlineData: { data: audioBase64, mimeType } },
-    prompt,
-  ]);
-  return result.response.text().trim();
+  const ai = getClient();
+  const result = await ai.models.generateContent({
+    model: MODEL,
+    contents: [
+      { inlineData: { data: audioBase64, mimeType } },
+      { text: prompt },
+    ],
+  });
+  return (result.text ?? '').trim();
 }
 
 // ─── 3. Personalised prompts ─────────────────────────────────────────────────
@@ -75,8 +81,12 @@ Rules:
 Example format: ["Prompt one...", "Prompt two...", "Prompt three..."]`;
 
   try {
-    const result = await flash().generateContent(prompt);
-    const text = result.response.text().trim();
+    const ai = getClient();
+    const result = await ai.models.generateContent({
+      model: MODEL,
+      contents: prompt,
+    });
+    const text = (result.text ?? '').trim();
     // Extract JSON array from response
     const match = text.match(/\[[\s\S]*\]/);
     if (!match) throw new Error('No JSON array in response');
@@ -109,8 +119,12 @@ Return ONLY valid JSON in this exact format, nothing else:
 {"summary": "...", "tags": ["tag1", "tag2", "tag3"]}`;
 
   try {
-    const result = await flash().generateContent(prompt);
-    const text = result.response.text().trim();
+    const ai = getClient();
+    const result = await ai.models.generateContent({
+      model: MODEL,
+      contents: prompt,
+    });
+    const text = (result.text ?? '').trim();
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('No JSON in response');
     const parsed = JSON.parse(match[0]) as { summary: string; tags: string[] };
