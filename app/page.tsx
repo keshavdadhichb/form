@@ -135,7 +135,7 @@ export default function HomePage() {
 
           {step === 2 && (
             <motion.div key="photo" {...variants} className="layout-wrapper">
-              <PhotoStep onNext={() => goNext(2)} />
+              <PhotoStep onNext={() => goNext(2)} onBack={() => goBack(2)} />
             </motion.div>
           )}
 

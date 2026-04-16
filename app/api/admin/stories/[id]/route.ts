@@ -21,9 +21,10 @@ export async function PATCH(
     const body = await request.json();
     const supabase = createAdminClient();
 
-    // Only allow toggling `hidden`
+    // Only allow toggling `hidden` or updating `story_text` (for AI transcriptions)
     const allowed: Record<string, unknown> = {};
     if (typeof body.hidden === 'boolean') allowed.hidden = body.hidden;
+    if (typeof body.story_text === 'string') allowed.story_text = body.story_text;
 
     if (Object.keys(allowed).length === 0) {
       return NextResponse.json({ error: 'No valid fields' }, { status: 400 });

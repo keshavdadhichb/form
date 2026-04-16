@@ -38,6 +38,7 @@ export default function ReviewStep({ onSubmit, onEditStep }: ReviewStepProps) {
 
       // Fields
       formData.append('name', store.name);
+      formData.append('phone', store.phone ?? '');
       formData.append('dob', `${store.dob.year}-${store.dob.month?.padStart(2, '0')}-${store.dob.day?.padStart(2, '0')}`);
       formData.append('father_name', store.fatherName);
       formData.append('mother_name', store.motherName);
@@ -142,6 +143,7 @@ export default function ReviewStep({ onSubmit, onEditStep }: ReviewStepProps) {
           >
             <div className="space-y-1">
               <p className="text-base text-ink font-sans font-medium">{store.name}</p>
+              {store.phone && <p className="text-sm text-ink-muted font-sans">{store.phone}</p>}
               {formatDob() && <p className="text-sm text-ink-muted font-sans">{formatDob()}</p>}
               {store.fatherName && (
                 <p className="text-sm text-ink-muted font-sans">{t('basics.father')}: {store.fatherName}</p>

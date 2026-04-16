@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
 
     // Extract text fields
     const name = formData.get('name') as string;
+    const phone = formData.get('phone') as string;
     const dob = formData.get('dob') as string;
     const fatherName = formData.get('father_name') as string;
     const motherName = formData.get('mother_name') as string;
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
       .from('stories')
       .insert({
         name,
+        phone: phone || null,
         dob: dobDate,
         father_name: fatherName || null,
         mother_name: motherName || null,

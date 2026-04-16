@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { motion } from 'framer-motion';
 import { useTranslation } from '@/lib/i18n';
 import { useFormStore } from '@/lib/store';
 import Button from '@/components/ui/Button';
@@ -14,6 +13,7 @@ interface BasicsStepProps {
 
 interface FormValues {
   name: string;
+  phone: string;
   dobDay: string;
   dobMonth: string;
   dobYear: string;
@@ -28,18 +28,18 @@ const currentYear = new Date().getFullYear();
 
 export default function BasicsStep({ onNext }: BasicsStepProps) {
   const { t, lang } = useTranslation();
-  const { name, dob, fatherName, motherName, setBasics } = useFormStore();
+  const { name, phone, dob, fatherName, motherName, setBasics } = useFormStore();
 
   const {
     register,
     control,
     handleSubmit,
     formState: { errors },
-    setValue,
     watch,
   } = useForm<FormValues>({
     defaultValues: {
       name,
+      phone,
       dobDay: dob.day,
       dobMonth: dob.month,
       dobYear: dob.year,
@@ -48,23 +48,21 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
     },
   });
 
-  // Persist to store on change
   const watched = watch();
   useEffect(() => {
     setBasics({
       name: watched.name ?? '',
+      phone: watched.phone ?? '',
       dob: { day: watched.dobDay ?? '', month: watched.dobMonth ?? '', year: watched.dobYear ?? '' },
       fatherName: watched.fatherName ?? '',
       motherName: watched.motherName ?? '',
     });
-  }, [watched.name, watched.dobDay, watched.dobMonth, watched.dobYear, watched.fatherName, watched.motherName]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const onSubmit = () => onNext();
+  }, [watched.name, watched.phone, watched.dobDay, watched.dobMonth, watched.dobYear, watched.fatherName, watched.motherName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const months = lang === 'hi' ? MONTHS_HI : MONTHS_EN;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-7 px-6 py-8 max-w-md mx-auto w-full">
+    <form onSubmit={handleSubmit(onNext)} className="flex flex-col gap-7 px-6 py-8 max-w-md mx-auto w-full">
       <h2
         className="text-2xl text-ink text-center mb-2"
         style={{ fontFamily: 'var(--font-fraunces), serif', fontWeight: 400 }}
@@ -81,11 +79,27 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
         {...register('name', { required: t('basics.required') })}
       />
 
+      {/* Mobile number */}
+      <Input
+        label={t('basics.phone')}
+        placeholder={t('basics.phone.placeholder')}
+        error={errors.phone?.message}
+        type="tel"
+        inputMode="numeric"
+        autoComplete="tel"
+        {...register('phone', {
+          required: t('basics.required'),
+          pattern: {
+            value: /^[0-9+\s\-().]{7,15}$/,
+            message: lang === 'hi' ? 'सही मोबाइल नंबर डालें' : 'Enter a valid mobile number',
+          },
+        })}
+      />
+
       {/* Date of Birth */}
       <div>
         <p className="text-sm text-ink-muted font-sans mb-3 px-1">{t('basics.dob')}</p>
         <div className="flex gap-3">
-          {/* Day */}
           <div className="flex-1">
             <Controller
               name="dobDay"
@@ -105,8 +119,6 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
               )}
             />
           </div>
-
-          {/* Month */}
           <div className="flex-[2]">
             <Controller
               name="dobMonth"
@@ -123,8 +135,6 @@ export default function BasicsStep({ onNext }: BasicsStepProps) {
               )}
             />
           </div>
-
-          {/* Year */}
           <div className="flex-[1.5]">
             <Controller
               name="dobYear"
@@ -198,12 +208,9 @@ function SelectDropdown({
       >
         <option value="">{label}</option>
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </select>
-      {/* Chevron */}
       <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-hint">
         <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
           <path d="M1 1l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

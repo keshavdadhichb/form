@@ -41,6 +41,8 @@ const translations = {
   'basics.father.placeholder': { hi: 'पिता का नाम', en: "Your father's name" },
   'basics.mother': { hi: 'माता का नाम', en: "Mother's name" },
   'basics.mother.placeholder': { hi: 'माता का नाम', en: "Your mother's name" },
+  'basics.phone': { hi: 'मोबाइल नंबर', en: 'Mobile number' },
+  'basics.phone.placeholder': { hi: 'जैसे: 9876543210', en: 'e.g. 9876543210' },
   'basics.required': { hi: 'यह ज़रूरी है', en: 'This field is required' },
 
   // ─── Screen 4 — About ───────────────────────────────────────────────────

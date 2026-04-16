@@ -84,6 +84,30 @@ export default function AdminPage() {
     setStories(data.stories ?? []);
   };
 
+  const handleStoryUpdate = (id: string, updates: Partial<Story>) => {
+    setStories((prev) => prev.map((s) => s.id === id ? { ...s, ...updates } : s));
+    setSelectedStory((prev) => prev?.id === id ? { ...prev, ...updates } : prev);
+  };
+
+  const exportCSV = () => {
+    const cols = ['name', 'phone', 'dob', 'father_name', 'mother_name', 'qualifications', 'achievements', 'hobbies', 'story_type', 'story_text', 'language', 'hidden', 'created_at'];
+    const escape = (v: unknown) => {
+      const s = v == null ? '' : String(v);
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+    const rows = [
+      cols.join(','),
+      ...filtered.map((s) => cols.map((c) => escape(s[c as keyof Story])).join(',')),
+    ];
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pariwar-stories-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const toggleHide = async (story: Story) => {
     if (!token) return;
     const newHidden = !story.hidden;
@@ -194,6 +218,12 @@ export default function AdminPage() {
             <p className="text-xs text-ink-hint font-sans">{filtered.length} / {stories.length} entries</p>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={exportCSV}
+              className="text-sm text-ink-muted hover:text-ink font-sans cursor-pointer transition-colors no-print"
+            >
+              Export CSV
+            </button>
             <button
               onClick={() => window.print()}
               className="text-sm text-ink-muted hover:text-ink font-sans cursor-pointer transition-colors no-print"
@@ -333,7 +363,13 @@ export default function AdminPage() {
       </div>
 
       {/* Modal */}
-      <StoryModal story={selectedStory} onClose={() => setSelectedStory(null)} onDelete={deleteStory} />
+      <StoryModal
+        story={selectedStory}
+        onClose={() => setSelectedStory(null)}
+        token={token}
+        onStoryUpdate={handleStoryUpdate}
+        onDelete={deleteStory}
+      />
     </div>
   );
 }

@@ -35,6 +35,7 @@ export type Story = {
   id: string;
   created_at: string;
   name: string;
+  phone: string | null;
   dob: string | null;
   father_name: string | null;
   mother_name: string | null;

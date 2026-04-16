@@ -1,4 +1,4 @@
-# सांवलराम मकुदेवी परिवार — Family Legacy Website
+# सांवलराम मखुदेवी परिवार — Family Legacy Website
 
 A bilingual (Hindi/English) family story-sharing website. Family members access it via a WhatsApp link, choose their language, and share their life story in text, audio, video, or file upload.
 
