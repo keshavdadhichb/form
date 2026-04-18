@@ -139,7 +139,15 @@ export async function POST(request: NextRequest) {
             <tr><td style="padding:4px 12px 4px 0;color:#888">Submitted at</td><td style="padding:4px 0">${submittedAt} IST</td></tr>
           </table>
         `,
+      }).then((result) => {
+        if ('error' in result && result.error) {
+          console.error('Email notification failed:', JSON.stringify(result.error));
+        } else {
+          console.log('Email notification sent, id:', (result as { data?: { id?: string } }).data?.id);
+        }
       }).catch((err) => console.error('Email notification error:', err));
+    } else {
+      console.warn('Email notification skipped: RESEND_API_KEY or NOTIFY_EMAIL not set');
     }
 
     return NextResponse.json({ ok: true, id: data.id });
