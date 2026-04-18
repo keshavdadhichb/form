@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase';
 import { generateSummaryAndTags } from '@/lib/gemini';
+import { Resend } from 'resend';
 
 export async function POST(request: NextRequest) {
   try {
@@ -114,6 +115,31 @@ export async function POST(request: NextRequest) {
             });
         })
         .catch((err) => console.error('Summary generation error:', err));
+    }
+
+    // Fire-and-forget: send notification email
+    if (process.env.RESEND_API_KEY && process.env.NOTIFY_EMAIL) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const submittedAt = new Date().toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: 'numeric', month: 'long', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      });
+      resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: process.env.NOTIFY_EMAIL,
+        subject: `New story: ${name}`,
+        html: `
+          <p>A new family story was just submitted.</p>
+          <table style="border-collapse:collapse;font-family:sans-serif;font-size:14px">
+            <tr><td style="padding:4px 12px 4px 0;color:#888">Name</td><td style="padding:4px 0"><strong>${name}</strong></td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#888">Phone</td><td style="padding:4px 0">${phone || '—'}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#888">Story type</td><td style="padding:4px 0">${storyType}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#888">Language</td><td style="padding:4px 0">${language === 'hi' ? 'Hindi' : 'English'}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#888">Submitted at</td><td style="padding:4px 0">${submittedAt} IST</td></tr>
+          </table>
+        `,
+      }).catch((err) => console.error('Email notification error:', err));
     }
 
     return NextResponse.json({ ok: true, id: data.id });
