@@ -1,8 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Story } from '@/lib/supabase';
+
+// Loaded client-side only — react-pdf cannot run on the server
+const PDFDownloadButton = dynamic(
+  () => import('@/components/admin/PDFDownloadButton'),
+  { ssr: false, loading: () => (
+    <div className="w-full h-12 rounded-xl bg-terracotta/10 animate-pulse" />
+  )},
+);
 
 function formatDate(dateStr: string): string {
   try {
@@ -318,6 +327,11 @@ export default function StoryModal({ story, onClose, token, onStoryUpdate, onDel
                     ))}
                   </div>
                 )}
+
+                {/* PDF download */}
+                <div className="border-t border-border-soft pt-4">
+                  <PDFDownloadButton story={story} />
+                </div>
 
                 {/* Delete button */}
                 {onDelete && (
