@@ -1,32 +1,14 @@
 'use client';
 
 import {
-  Document, Page, Text, View, Image, StyleSheet, Font,
+  Document, Page, Text, View, Image, StyleSheet,
 } from '@react-pdf/renderer';
 import type { Story } from '@/lib/supabase';
 
-// Register Noto Serif for Hindi/Devanagari support
-Font.register({
-  family: 'NotoSerif',
-  fonts: [
-    {
-      src: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-serif@5.1.1/files/noto-serif-latin-400-normal.woff2',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-serif@5.1.1/files/noto-serif-latin-700-normal.woff2',
-      fontWeight: 700,
-    },
-  ],
-});
+// ── Only built-in PDF fonts — no network dependency, always works ────────────
+// Helvetica / Helvetica-Bold  →  labels, meta, small caps
+// Times-Roman / Times-Bold    →  name, story body
 
-// Register a Devanagari-capable font for Hindi text
-Font.register({
-  family: 'NotoDevanagari',
-  src: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-devanagari@5.1.0/files/noto-sans-devanagari-devanagari-400-normal.woff2',
-});
-
-// ── Design tokens (print-safe) ──────────────────────────────────────────────
 const C = {
   terracotta: '#B85C35',
   terracottaLight: '#E8B298',
@@ -36,7 +18,6 @@ const C = {
   muted: '#8C6E4E',
   hint: '#B8956A',
   cream: '#FDF8F3',
-  sage: '#5A7A52',
 };
 
 const S = StyleSheet.create({
@@ -49,261 +30,127 @@ const S = StyleSheet.create({
     fontFamily: 'Helvetica',
   },
 
-  // ── Left accent bar ────────────────────────────────────────────────────────
-  leftBar: {
-    position: 'absolute',
-    left: 0, top: 0, bottom: 0,
-    width: 5,
-    backgroundColor: C.terracotta,
-  },
-  // Small top corner decoration
-  cornerDot: {
-    position: 'absolute',
-    top: 0, left: 0,
+  // Corner accents
+  cornerTL: {
+    position: 'absolute', left: 0, top: 0,
     width: 28, height: 28,
     backgroundColor: C.terracotta,
   },
-  cornerDotBR: {
-    position: 'absolute',
-    bottom: 0, right: 0,
+  cornerBR: {
+    position: 'absolute', right: 0, bottom: 0,
     width: 16, height: 16,
     backgroundColor: C.wheatLight,
   },
-
-  // ── Header ─────────────────────────────────────────────────────────────────
-  header: {
-    alignItems: 'center',
-    marginBottom: 22,
+  leftBar: {
+    position: 'absolute', left: 0, top: 0, bottom: 0,
+    width: 5, backgroundColor: C.terracotta,
   },
+
+  // Header
+  header: { alignItems: 'center', marginBottom: 22 },
   familyName: {
     fontFamily: 'Helvetica',
-    fontSize: 7,
-    color: C.hint,
-    letterSpacing: 3,
-    textAlign: 'center',
-    marginBottom: 18,
+    fontSize: 7, color: C.hint,
+    letterSpacing: 3, textAlign: 'center', marginBottom: 18,
   },
 
-  // ── Photo ──────────────────────────────────────────────────────────────────
+  // Photo ring
   photoRing: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
-    borderWidth: 2,
-    borderColor: C.terracotta,
-    borderStyle: 'solid',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
+    width: 92, height: 92, borderRadius: 46,
+    borderWidth: 2, borderColor: C.terracotta, borderStyle: 'solid',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
   },
-  photo: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-  },
+  photo: { width: 84, height: 84, borderRadius: 42 },
   initials: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
+    width: 84, height: 84, borderRadius: 42,
     backgroundColor: C.wheatLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center',
   },
   initialsText: {
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 26,
-    color: C.terracotta,
+    fontFamily: 'Helvetica-Bold', fontSize: 26, color: C.terracotta,
   },
 
-  // ── Name + details ─────────────────────────────────────────────────────────
+  // Name & sub-details
   name: {
-    fontFamily: 'NotoSerif',
-    fontWeight: 700,
-    fontSize: 28,
-    color: C.ink,
-    textAlign: 'center',
-    marginBottom: 6,
+    fontFamily: 'Times-Bold', fontSize: 28,
+    color: C.ink, textAlign: 'center', marginBottom: 6,
   },
-  badge: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 5,
-  },
+  badge: { flexDirection: 'row', justifyContent: 'center', marginBottom: 5 },
   badgePill: {
-    backgroundColor: C.wheatLight,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginHorizontal: 3,
+    backgroundColor: C.wheatLight, borderRadius: 10,
+    paddingHorizontal: 8, paddingVertical: 2, marginHorizontal: 3,
   },
   badgeText: {
-    fontFamily: 'Helvetica',
-    fontSize: 7.5,
-    color: C.wheat,
-    letterSpacing: 0.5,
+    fontFamily: 'Helvetica', fontSize: 7.5, color: C.wheat, letterSpacing: 0.5,
   },
   subLine: {
-    fontFamily: 'Helvetica',
-    fontSize: 9.5,
-    color: C.muted,
-    textAlign: 'center',
-    marginBottom: 3,
+    fontFamily: 'Helvetica', fontSize: 9.5, color: C.muted,
+    textAlign: 'center', marginBottom: 3,
   },
 
-  // ── Divider ────────────────────────────────────────────────────────────────
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 18,
-    marginBottom: 18,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 0.75,
-    backgroundColor: C.terracottaLight,
-  },
+  // Divider
+  dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 18 },
+  dividerLine: { flex: 1, height: 0.75, backgroundColor: C.terracottaLight },
   dividerDiamond: {
-    width: 6,
-    height: 6,
-    backgroundColor: C.terracotta,
+    width: 6, height: 6, backgroundColor: C.terracotta,
     marginHorizontal: 10,
-    transform: 'rotate(45deg)',
   },
 
-  // ── Life details grid ──────────────────────────────────────────────────────
-  lifeGrid: {
-    flexDirection: 'row',
-    marginBottom: 4,
-  },
-  lifeCell: {
-    flex: 1,
-    paddingRight: 14,
-  },
+  // Life details grid
+  lifeGrid: { flexDirection: 'row', marginBottom: 4 },
+  lifeCell: { flex: 1, paddingRight: 14 },
   lifeCellMid: {
-    flex: 1,
-    paddingHorizontal: 14,
-    borderLeftWidth: 1,
-    borderLeftColor: C.wheatLight,
-    borderLeftStyle: 'solid',
-    borderRightWidth: 1,
-    borderRightColor: C.wheatLight,
-    borderRightStyle: 'solid',
+    flex: 1, paddingHorizontal: 14,
+    borderLeftWidth: 1, borderLeftColor: C.wheatLight, borderLeftStyle: 'solid',
+    borderRightWidth: 1, borderRightColor: C.wheatLight, borderRightStyle: 'solid',
   },
-  lifeCellRight: {
-    flex: 1,
-    paddingLeft: 14,
-  },
+  lifeCellRight: { flex: 1, paddingLeft: 14 },
   lifeLabel: {
-    fontFamily: 'Helvetica',
-    fontSize: 6,
-    color: C.terracotta,
-    letterSpacing: 2,
-    marginBottom: 5,
+    fontFamily: 'Helvetica', fontSize: 6,
+    color: C.terracotta, letterSpacing: 2, marginBottom: 5,
   },
   lifeValue: {
-    fontFamily: 'Helvetica',
-    fontSize: 9.5,
-    color: C.ink,
-    lineHeight: 1.55,
+    fontFamily: 'Helvetica', fontSize: 9.5, color: C.ink, lineHeight: 1.55,
   },
 
-  // ── Story text ─────────────────────────────────────────────────────────────
-  storyWrap: {
-    marginTop: 4,
-  },
+  // Story
   quoteOpen: {
-    fontFamily: 'NotoSerif',
-    fontSize: 56,
-    color: C.terracotta,
-    lineHeight: 0.75,
-    marginBottom: -4,
-    opacity: 0.3,
+    fontFamily: 'Times-Bold', fontSize: 56, color: C.terracotta,
+    lineHeight: 0.75, marginBottom: -4, opacity: 0.3,
   },
   storyText: {
-    fontFamily: 'NotoSerif',
-    fontSize: 10.5,
-    color: C.ink,
-    lineHeight: 1.9,
-  },
-  aiNote: {
-    fontFamily: 'Helvetica',
-    fontSize: 8,
-    color: C.hint,
-    fontStyle: 'italic',
-    marginTop: 10,
+    fontFamily: 'Times-Roman', fontSize: 10.5, color: C.ink, lineHeight: 1.9,
   },
 
-  // ── Summary block ──────────────────────────────────────────────────────────
+  // Summary fallback
   summaryBlock: {
-    backgroundColor: C.wheatLight,
-    borderRadius: 6,
-    padding: 10,
-    marginTop: 4,
+    backgroundColor: C.wheatLight, borderRadius: 6, padding: 10, marginTop: 4,
   },
   summaryText: {
-    fontFamily: 'Helvetica',
-    fontSize: 9.5,
-    color: C.ink,
-    lineHeight: 1.6,
-    fontStyle: 'italic',
+    fontFamily: 'Helvetica', fontSize: 9.5, color: C.ink,
+    lineHeight: 1.6, fontStyle: 'italic',
+  },
+  aiNote: {
+    fontFamily: 'Helvetica', fontSize: 8, color: C.hint,
+    fontStyle: 'italic', marginTop: 8,
   },
 
-  // ── Tags ───────────────────────────────────────────────────────────────────
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 12,
-  },
+  // Tags
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 12 },
   tagPill: {
-    backgroundColor: C.wheatLight,
-    borderRadius: 8,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    marginRight: 5,
-    marginBottom: 5,
+    backgroundColor: C.wheatLight, borderRadius: 8,
+    paddingHorizontal: 7, paddingVertical: 3, marginRight: 5, marginBottom: 5,
   },
-  tagText: {
-    fontFamily: 'Helvetica',
-    fontSize: 7.5,
-    color: C.wheat,
-  },
+  tagText: { fontFamily: 'Helvetica', fontSize: 7.5, color: C.wheat },
 
-  // ── Footer ─────────────────────────────────────────────────────────────────
-  footer: {
-    position: 'absolute',
-    bottom: 28,
-    left: 54,
-    right: 54,
-  },
-  footerLine: {
-    height: 0.75,
-    backgroundColor: C.wheatLight,
-    marginBottom: 8,
-  },
-  footerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  footerLeft: {
-    fontFamily: 'NotoSerif',
-    fontSize: 8,
-    color: C.hint,
-  },
-  footerRight: {
-    fontFamily: 'Helvetica',
-    fontSize: 8,
-    color: C.hint,
-  },
-  footerCenter: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: C.terracottaLight,
-  },
+  // Footer
+  footer: { position: 'absolute', bottom: 28, left: 54, right: 54 },
+  footerLine: { height: 0.75, backgroundColor: C.wheatLight, marginBottom: 8 },
+  footerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  footerLeft: { fontFamily: 'Helvetica', fontSize: 8, color: C.hint },
+  footerRight: { fontFamily: 'Helvetica', fontSize: 8, color: C.hint },
+  footerDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: C.terracottaLight },
 });
-
-// ── Helper components ─────────────────────────────────────────────────────────
 
 function Divider() {
   return (
@@ -315,7 +162,7 @@ function Divider() {
   );
 }
 
-function formatDobFull(dob: string | null): string {
+function formatDobFull(dob: string | null) {
   if (!dob) return '';
   try {
     return new Date(dob).toLocaleDateString('en-IN', {
@@ -324,7 +171,7 @@ function formatDobFull(dob: string | null): string {
   } catch { return dob; }
 }
 
-function formatDateShort(dateStr: string): string {
+function formatDateShort(dateStr: string) {
   try {
     return new Date(dateStr).toLocaleDateString('en-IN', {
       day: 'numeric', month: 'long', year: 'numeric',
@@ -332,54 +179,37 @@ function formatDateShort(dateStr: string): string {
   } catch { return dateStr; }
 }
 
-// ── Main PDF document ─────────────────────────────────────────────────────────
-
-interface Props { story: Story }
-
-export default function StoryPDF({ story }: Props) {
+export default function StoryPDF({ story }: { story: Story }) {
   const initials = story.name.trim().split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
-  const dobLine = story.dob ? formatDobFull(story.dob) : null;
+  const dobLine = formatDobFull(story.dob);
   const parentLine = [
     story.father_name ? `Father: ${story.father_name}` : null,
     story.mother_name ? `Mother: ${story.mother_name}` : null,
   ].filter(Boolean).join('   ·   ');
 
-  const storyBody = story.story_text ?? null;
-  const hasLife = story.qualifications || story.achievements || story.hobbies;
   const lifeFields = [
     story.qualifications ? { label: 'EDUCATION', value: story.qualifications } : null,
-    story.achievements  ? { label: 'CAREER', value: story.achievements }      : null,
-    story.hobbies       ? { label: 'HOBBIES', value: story.hobbies }          : null,
+    story.achievements   ? { label: 'CAREER',    value: story.achievements }   : null,
+    story.hobbies        ? { label: 'HOBBIES',   value: story.hobbies }        : null,
   ].filter(Boolean) as { label: string; value: string }[];
 
-  const storyTypeLabel = {
-    text:   'Written story',
-    audio:  'Audio story',
-    video:  'Video story',
-    upload: 'Uploaded story',
-  }[story.story_type] ?? story.story_type;
-
-  const langLabel = story.language === 'hi' ? 'हिन्दी' : 'English';
+  const storyTypeLabel: Record<string, string> = {
+    text: 'Written', audio: 'Audio', video: 'Video', upload: 'Uploaded',
+  };
+  const langLabel = story.language === 'hi' ? 'Hindi' : 'English';
 
   return (
-    <Document
-      title={`${story.name} — Family Story`}
-      author="Sanwalram Makhudevi Pariwar"
-    >
+    <Document title={`${story.name} — Family Story`} author="Sanwalram Makhudevi Pariwar">
       <Page size="A4" style={S.page}>
 
-        {/* Corner accents */}
-        <View style={S.cornerDot} />
-        <View style={S.cornerDotBR} />
-
-        {/* Left accent stripe */}
+        <View style={S.cornerTL} />
+        <View style={S.cornerBR} />
         <View style={S.leftBar} />
 
-        {/* ── Header ─────────────────────────────────────────────────────── */}
+        {/* Header */}
         <View style={S.header}>
           <Text style={S.familyName}>SANWALRAM MAKHUDEVI PARIWAR</Text>
 
-          {/* Photo */}
           <View style={S.photoRing}>
             {story.photo_url ? (
               <Image src={story.photo_url} style={S.photo} />
@@ -390,29 +220,26 @@ export default function StoryPDF({ story }: Props) {
             )}
           </View>
 
-          {/* Name */}
           <Text style={S.name}>{story.name}</Text>
 
-          {/* Badges */}
           <View style={S.badge}>
             <View style={S.badgePill}><Text style={S.badgeText}>{langLabel}</Text></View>
-            <View style={S.badgePill}><Text style={S.badgeText}>{storyTypeLabel}</Text></View>
+            <View style={S.badgePill}><Text style={S.badgeText}>{storyTypeLabel[story.story_type] ?? story.story_type}</Text></View>
           </View>
 
-          {/* DOB + Parents */}
-          {dobLine    && <Text style={S.subLine}>{dobLine}</Text>}
-          {parentLine && <Text style={S.subLine}>{parentLine}</Text>}
+          {!!dobLine     && <Text style={S.subLine}>{dobLine}</Text>}
+          {!!parentLine  && <Text style={S.subLine}>{parentLine}</Text>}
         </View>
 
-        {/* ── Life details ────────────────────────────────────────────────── */}
-        {hasLife && (
+        {/* Life details */}
+        {lifeFields.length > 0 && (
           <>
             <Divider />
             <View style={S.lifeGrid}>
               {lifeFields.map((f, i) => {
                 const cellStyle =
                   lifeFields.length === 3
-                    ? (i === 0 ? S.lifeCell : i === 1 ? S.lifeCellMid : S.lifeCellRight)
+                    ? ([S.lifeCell, S.lifeCellMid, S.lifeCellRight][i])
                     : (i === 0 ? S.lifeCell : S.lifeCellRight);
                 return (
                   <View key={f.label} style={cellStyle}>
@@ -425,27 +252,25 @@ export default function StoryPDF({ story }: Props) {
           </>
         )}
 
-        {/* ── Story / Summary ─────────────────────────────────────────────── */}
-        {(storyBody || story.summary) && (
+        {/* Story / Summary */}
+        {(story.story_text || story.summary) && (
           <>
             <Divider />
-            <View style={S.storyWrap}>
-              {storyBody ? (
-                <>
-                  <Text style={S.quoteOpen}>"</Text>
-                  <Text style={S.storyText}>{storyBody}</Text>
-                </>
-              ) : story.summary ? (
-                <View style={S.summaryBlock}>
-                  <Text style={S.summaryText}>{story.summary}</Text>
-                  <Text style={S.aiNote}>— AI-generated summary</Text>
-                </View>
-              ) : null}
-            </View>
+            {story.story_text ? (
+              <>
+                <Text style={S.quoteOpen}>{'"'}</Text>
+                <Text style={S.storyText}>{story.story_text}</Text>
+              </>
+            ) : (
+              <View style={S.summaryBlock}>
+                <Text style={S.summaryText}>{story.summary}</Text>
+                <Text style={S.aiNote}>— AI-generated summary</Text>
+              </View>
+            )}
           </>
         )}
 
-        {/* ── Tags ────────────────────────────────────────────────────────── */}
+        {/* Tags */}
         {story.tags && story.tags.length > 0 && (
           <View style={S.tagsRow}>
             {story.tags.map((tag) => (
@@ -456,12 +281,12 @@ export default function StoryPDF({ story }: Props) {
           </View>
         )}
 
-        {/* ── Footer ──────────────────────────────────────────────────────── */}
+        {/* Footer */}
         <View style={S.footer}>
           <View style={S.footerLine} />
           <View style={S.footerRow}>
-            <Text style={S.footerLeft}>सांवलराम मखुदेवी परिवार</Text>
-            <View style={S.footerCenter} />
+            <Text style={S.footerLeft}>Sanwalram Makhudevi Pariwar</Text>
+            <View style={S.footerDot} />
             <Text style={S.footerRight}>{formatDateShort(story.created_at)}</Text>
           </View>
         </View>
