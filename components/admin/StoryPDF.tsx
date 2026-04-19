@@ -1,14 +1,23 @@
 'use client';
 
 import {
-  Document, Page, Text, View, Image, StyleSheet,
+  Document, Page, Text, View, Image, StyleSheet, Font,
 } from '@react-pdf/renderer';
 import type { Story } from '@/lib/supabase';
 
-// ── Only built-in PDF fonts — no network dependency, always works ────────────
-// Helvetica / Helvetica-Bold  →  labels, meta, small caps
-// Times-Roman / Times-Bold    →  name, story body
+// ── Font registration ────────────────────────────────────────────────────────
+// Noto Sans Devanagari covers both Devanagari (Hindi) and Latin glyphs.
+// Files are served from /public/fonts/ as static assets.
+// Font.register is safe to call at module level in a 'use client' file.
+Font.register({
+  family: 'NotoDevanagari',
+  fonts: [
+    { src: '/fonts/NotoSansDevanagari-Regular.ttf', fontWeight: 400 },
+    { src: '/fonts/NotoSansDevanagari-Bold.ttf',    fontWeight: 700 },
+  ],
+});
 
+// ── Colour palette ───────────────────────────────────────────────────────────
 const C = {
   terracotta: '#B85C35',
   terracottaLight: '#E8B298',
@@ -19,6 +28,15 @@ const C = {
   hint: '#B8956A',
   cream: '#FDF8F3',
 };
+
+// ── Shared style helper: pick font by language ───────────────────────────────
+// Hindi stories use NotoDevanagari; English uses Times-Roman/Helvetica.
+function bodyFont(isHindi: boolean): 'NotoDevanagari' | 'Times-Roman' {
+  return isHindi ? 'NotoDevanagari' : 'Times-Roman';
+}
+function uiFont(isHindi: boolean): 'NotoDevanagari' | 'Helvetica' {
+  return isHindi ? 'NotoDevanagari' : 'Helvetica';
+}
 
 const S = StyleSheet.create({
   page: {
@@ -71,10 +89,6 @@ const S = StyleSheet.create({
   },
 
   // Name & sub-details
-  name: {
-    fontFamily: 'Times-Bold', fontSize: 28,
-    color: C.ink, textAlign: 'center', marginBottom: 6,
-  },
   badge: { flexDirection: 'row', justifyContent: 'center', marginBottom: 5 },
   badgePill: {
     backgroundColor: C.wheatLight, borderRadius: 10,
@@ -82,10 +96,6 @@ const S = StyleSheet.create({
   },
   badgeText: {
     fontFamily: 'Helvetica', fontSize: 7.5, color: C.wheat, letterSpacing: 0.5,
-  },
-  subLine: {
-    fontFamily: 'Helvetica', fontSize: 9.5, color: C.muted,
-    textAlign: 'center', marginBottom: 3,
   },
 
   // Divider
@@ -109,26 +119,16 @@ const S = StyleSheet.create({
     fontFamily: 'Helvetica', fontSize: 6,
     color: C.terracotta, letterSpacing: 2, marginBottom: 5,
   },
-  lifeValue: {
-    fontFamily: 'Helvetica', fontSize: 9.5, color: C.ink, lineHeight: 1.55,
-  },
 
   // Story
   quoteOpen: {
     fontFamily: 'Times-Bold', fontSize: 56, color: C.terracotta,
     lineHeight: 0.75, marginBottom: -4, opacity: 0.3,
   },
-  storyText: {
-    fontFamily: 'Times-Roman', fontSize: 10.5, color: C.ink, lineHeight: 1.9,
-  },
 
   // Summary fallback
   summaryBlock: {
     backgroundColor: C.wheatLight, borderRadius: 6, padding: 10, marginTop: 4,
-  },
-  summaryText: {
-    fontFamily: 'Helvetica', fontSize: 9.5, color: C.ink,
-    lineHeight: 1.6, fontStyle: 'italic',
   },
   aiNote: {
     fontFamily: 'Helvetica', fontSize: 8, color: C.hint,
@@ -141,7 +141,6 @@ const S = StyleSheet.create({
     backgroundColor: C.wheatLight, borderRadius: 8,
     paddingHorizontal: 7, paddingVertical: 3, marginRight: 5, marginBottom: 5,
   },
-  tagText: { fontFamily: 'Helvetica', fontSize: 7.5, color: C.wheat },
 
   // Footer
   footer: { position: 'absolute', bottom: 28, left: 54, right: 54 },
@@ -180,6 +179,7 @@ function formatDateShort(dateStr: string) {
 }
 
 export default function StoryPDF({ story }: { story: Story }) {
+  const isHindi = story.language === 'hi';
   const initials = story.name.trim().split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   const dobLine = formatDobFull(story.dob);
   const parentLine = [
@@ -196,7 +196,49 @@ export default function StoryPDF({ story }: { story: Story }) {
   const storyTypeLabel: Record<string, string> = {
     text: 'Written', audio: 'Audio', video: 'Video', upload: 'Uploaded',
   };
-  const langLabel = story.language === 'hi' ? 'Hindi' : 'English';
+  const langLabel = isHindi ? 'Hindi' : 'English';
+
+  // Dynamic font styles built from language
+  const nameStyle = {
+    fontFamily: isHindi ? 'NotoDevanagari' : 'Times-Bold',
+    fontWeight: isHindi ? (700 as const) : undefined,
+    fontSize: 28,
+    color: C.ink,
+    textAlign: 'center' as const,
+    marginBottom: 6,
+  };
+  const subLineStyle = {
+    fontFamily: uiFont(isHindi),
+    fontSize: 9.5,
+    color: C.muted,
+    textAlign: 'center' as const,
+    marginBottom: 3,
+  };
+  const lifeValueStyle = {
+    fontFamily: uiFont(isHindi),
+    fontSize: 9.5,
+    color: C.ink,
+    lineHeight: 1.55,
+  };
+  const storyTextStyle = {
+    fontFamily: bodyFont(isHindi),
+    fontWeight: isHindi ? (400 as const) : undefined,
+    fontSize: isHindi ? 11.5 : 10.5,
+    color: C.ink,
+    lineHeight: isHindi ? 2.1 : 1.9,
+  };
+  const summaryTextStyle = {
+    fontFamily: uiFont(isHindi),
+    fontSize: 9.5,
+    color: C.ink,
+    lineHeight: 1.6,
+    fontStyle: isHindi ? undefined : ('italic' as const),
+  };
+  const tagTextStyle = {
+    fontFamily: uiFont(isHindi),
+    fontSize: 7.5,
+    color: C.wheat,
+  };
 
   return (
     <Document title={`${story.name} — Family Story`} author="Sanwalram Makhudevi Pariwar">
@@ -220,15 +262,15 @@ export default function StoryPDF({ story }: { story: Story }) {
             )}
           </View>
 
-          <Text style={S.name}>{story.name}</Text>
+          <Text style={nameStyle}>{story.name}</Text>
 
           <View style={S.badge}>
             <View style={S.badgePill}><Text style={S.badgeText}>{langLabel}</Text></View>
             <View style={S.badgePill}><Text style={S.badgeText}>{storyTypeLabel[story.story_type] ?? story.story_type}</Text></View>
           </View>
 
-          {!!dobLine     && <Text style={S.subLine}>{dobLine}</Text>}
-          {!!parentLine  && <Text style={S.subLine}>{parentLine}</Text>}
+          {!!dobLine    && <Text style={subLineStyle}>{dobLine}</Text>}
+          {!!parentLine && <Text style={subLineStyle}>{parentLine}</Text>}
         </View>
 
         {/* Life details */}
@@ -244,7 +286,7 @@ export default function StoryPDF({ story }: { story: Story }) {
                 return (
                   <View key={f.label} style={cellStyle}>
                     <Text style={S.lifeLabel}>{f.label}</Text>
-                    <Text style={S.lifeValue}>{f.value}</Text>
+                    <Text style={lifeValueStyle}>{f.value}</Text>
                   </View>
                 );
               })}
@@ -258,12 +300,12 @@ export default function StoryPDF({ story }: { story: Story }) {
             <Divider />
             {story.story_text ? (
               <>
-                <Text style={S.quoteOpen}>{'"'}</Text>
-                <Text style={S.storyText}>{story.story_text}</Text>
+                {!isHindi && <Text style={S.quoteOpen}>{'"'}</Text>}
+                <Text style={storyTextStyle}>{story.story_text}</Text>
               </>
             ) : (
               <View style={S.summaryBlock}>
-                <Text style={S.summaryText}>{story.summary}</Text>
+                <Text style={summaryTextStyle}>{story.summary}</Text>
                 <Text style={S.aiNote}>— AI-generated summary</Text>
               </View>
             )}
@@ -275,7 +317,7 @@ export default function StoryPDF({ story }: { story: Story }) {
           <View style={S.tagsRow}>
             {story.tags.map((tag) => (
               <View key={tag} style={S.tagPill}>
-                <Text style={S.tagText}>{tag}</Text>
+                <Text style={tagTextStyle}>{tag}</Text>
               </View>
             ))}
           </View>
